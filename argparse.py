@@ -2199,7 +2199,9 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
         # arguments
         elif nargs == _OPTIONAL_PARSER:
             # XXX.bewest: This doesn't quite work.
-            nargs_pattern = '(-*A?-[-AO]*)?'
+            nargs_pattern = '(-*A[-AO]*)|([-AO]*)'
+            #nargs_pattern = '([-*A]?-[-AO]*)?'
+            #nargs_pattern = '([-AO]*)'
             nargs_pattern = '([-AO]*)'
 
         # all others should be integers
