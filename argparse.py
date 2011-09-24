@@ -126,7 +126,7 @@ OPTIONAL = '?'
 ZERO_OR_MORE = '*'
 ONE_OR_MORE = '+'
 PARSER = 'A...'
-_OPTIONAL_PARSER = 'A?..'
+_OPTIONAL_PARSER = 'A...?'
 REMAINDER = '...'
 _UNRECOGNIZED_ARGS_ATTR = '_unrecognized_args'
 
@@ -1804,7 +1804,7 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
             seen_actions.add(action)
             argument_values = self._get_values(action, argument_strings)
 
-            pprint(['take action', action, argument_strings])
+            pprint(['take action', action, argument_values, argument_strings])
 
             # error if this argument is not allowed with other previously
             # seen arguments, assuming that actions that use the default
@@ -1833,7 +1833,7 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
             # identify additional optionals in the same arg string
             # (e.g. -xyz is the same as -x -y -z if no args are required)
             match_argument = self._match_argument
-            pprint(['consume optional', vars( )])
+            pprint(['consume optional', start_index, vars( )])
             action_tuples = []
             while True:
 
@@ -1857,6 +1857,7 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
                         option_string = char + explicit_arg[0]
                         new_explicit_arg = explicit_arg[1:] or None
                         optionals_map = self._option_string_actions
+                        pprint(['SPECIAL', vars( )])
                         if option_string in optionals_map:
                             action = optionals_map[option_string]
                             explicit_arg = new_explicit_arg
@@ -2201,8 +2202,8 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
             # XXX.bewest: This doesn't quite work.
             nargs_pattern = '(-*A[-AO]*)|([-AO]*)'
             #nargs_pattern = '([-*A]?-[-AO]*)?'
+            nargs_pattern = '([-*A?[A-]*)'
             #nargs_pattern = '([-AO]*)'
-            nargs_pattern = '([-AO]*)'
 
         # all others should be integers
         else:
@@ -2229,8 +2230,8 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
         # optional argument produces a default when not present
         opt_types = [ OPTIONAL, _OPTIONAL_PARSER ]
         pprint(['get values', action, arg_strings])
-        #if not arg_strings and action.nargs == OPTIONAL:
-        if not arg_strings and action.nargs in opt_types:
+        if not arg_strings and action.nargs == OPTIONAL:
+        #if not arg_strings and action.nargs in opt_types:
             if action.option_strings:
                 value = action.const
             else:
@@ -2262,6 +2263,11 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
         # PARSER arguments convert all values, but check only the first
         elif action.nargs in [ PARSER, _OPTIONAL_PARSER ]:
             value = [self._get_value(action, v) for v in arg_strings]
+            if (not arg_strings and action.default is not None
+               and action.nargs == _OPTIONAL_PARSER):
+              value = [action.default]
+              pprint("DEFAULT VALUE!!!")
+            pprint(["VALUE", value, arg_strings])
             self._check_value(action, value[0])
 
         # all other types of nargs produce a list
