@@ -2186,12 +2186,7 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
         # allow one optional argument followed by any number of options or
         # arguments
         elif nargs == _OPTIONAL_PARSER:
-            # XXX.bewest: This doesn't quite work.
-            nargs_pattern = '(-*A[-AO]*)|([-AO]*)'
-            nargs_pattern = '(-*A[-AO]*)?'
-            #nargs_pattern = '([-*A]?-[-AO]*)?'
-            #nargs_pattern = '([-*A?[A-]*)'
-            #nargs_pattern = '([-AO]*)'
+            nargs_pattern = '(-*A?[-AO]*)?'
 
         # all others should be integers
         else:
