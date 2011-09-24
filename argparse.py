@@ -1107,7 +1107,6 @@ class _SubParsersAction(Action):
         if self.dest is not SUPPRESS:
             setattr(namespace, self.dest, parser_name)
 
-        pprint(['select parser', vars( )])
         # select the parser
         try:
             parser = self._name_parser_map[parser_name]
@@ -1685,7 +1684,6 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
         # create the parsers action and add it to the positionals list
         parsers_class = self._pop_action_class(kwargs, 'parsers')
         action = parsers_class(option_strings=[], **kwargs)
-        pprint(['add subparsers', parsers_class, kwargs ])
         self._subparsers._add_action(action)
 
         # return the created parsers action
@@ -1804,8 +1802,6 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
             seen_actions.add(action)
             argument_values = self._get_values(action, argument_strings)
 
-            pprint(['take action', action, argument_values, argument_strings])
-
             # error if this argument is not allowed with other previously
             # seen arguments, assuming that actions that use the default
             # value don't really count as "present"
@@ -1822,7 +1818,6 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
             if argument_values is not SUPPRESS:
                 action(self, namespace, argument_values, option_string)
 
-        pprint(['consume optionals'])
         # function to convert arg_strings into an optional action
         def consume_optional(start_index):
 
@@ -1833,7 +1828,6 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
             # identify additional optionals in the same arg string
             # (e.g. -xyz is the same as -x -y -z if no args are required)
             match_argument = self._match_argument
-            pprint(['consume optional', start_index, vars( )])
             action_tuples = []
             while True:
 
@@ -1857,7 +1851,6 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
                         option_string = char + explicit_arg[0]
                         new_explicit_arg = explicit_arg[1:] or None
                         optionals_map = self._option_string_actions
-                        pprint(['SPECIAL', vars( )])
                         if option_string in optionals_map:
                             action = optionals_map[option_string]
                             explicit_arg = new_explicit_arg
@@ -1901,7 +1894,6 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
         # the list of Positionals left to be parsed; this is modified
         # by consume_positionals()
         positionals = self._get_positional_actions()
-        pprint(['remaining positionals', positionals])
 
         # function to convert arg_strings into positional actions
         def consume_positionals(start_index):
@@ -1910,13 +1902,11 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
             selected_pattern = arg_strings_pattern[start_index:]
             arg_counts = match_partial(positionals, selected_pattern)
 
-            pprint(['consume positionals', vars( )])
             # slice off the appropriate arg strings for each Positional
             # and add the Positional and its args to the list
             for action, arg_count in zip(positionals, arg_counts):
                 args = arg_strings[start_index: start_index + arg_count]
                 start_index += arg_count
-                pprint(['loop', action, arg_count ])
                 take_action(action, args)
 
             # slice off the Positionals that we just parsed and return the
@@ -1958,7 +1948,6 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
                 start_index = next_option_string_index
 
             # consume the next optional and any arguments for it
-            pprint('calling consume optionals')
             start_index = consume_optional(start_index)
 
         # consume any positionals following the last Optional
@@ -2034,7 +2023,6 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
         nargs_pattern = self._get_nargs_pattern(action)
         match = _re.match(nargs_pattern, arg_strings_pattern)
 
-        pprint(['match argument', nargs_pattern, match])
         # raise an exception if we weren't able to find a match
         if match is None:
             nargs_errors = {
@@ -2058,7 +2046,6 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
             pattern = ''.join([self._get_nargs_pattern(action)
                                for action in actions_slice])
             match = _re.match(pattern, arg_strings_pattern)
-            pprint(['match arguments partial', pattern, match])
             if match is not None:
                 result.extend([len(string) for string in match.groups()])
                 break
@@ -2201,8 +2188,9 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
         elif nargs == _OPTIONAL_PARSER:
             # XXX.bewest: This doesn't quite work.
             nargs_pattern = '(-*A[-AO]*)|([-AO]*)'
+            nargs_pattern = '(-*A[-AO]*)?'
             #nargs_pattern = '([-*A]?-[-AO]*)?'
-            nargs_pattern = '([-*A?[A-]*)'
+            #nargs_pattern = '([-*A?[A-]*)'
             #nargs_pattern = '([-AO]*)'
 
         # all others should be integers
@@ -2214,7 +2202,6 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
             nargs_pattern = nargs_pattern.replace('-*', '')
             nargs_pattern = nargs_pattern.replace('-', '')
 
-        print nargs_pattern, nargs
         # return the pattern
         return nargs_pattern
 
@@ -2228,10 +2215,7 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
             arg_strings = [s for s in arg_strings if s != '--']
 
         # optional argument produces a default when not present
-        opt_types = [ OPTIONAL, _OPTIONAL_PARSER ]
-        pprint(['get values', action, arg_strings])
         if not arg_strings and action.nargs == OPTIONAL:
-        #if not arg_strings and action.nargs in opt_types:
             if action.option_strings:
                 value = action.const
             else:
@@ -2239,7 +2223,6 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
             if isinstance(value, basestring):
                 value = self._get_value(action, value)
                 self._check_value(action, value)
-            pprint(['VALUE', value])
         # when nargs='*' on a positional, if there were no command-line
         # args, use the default if it is anything other than None
         elif (not arg_strings and action.nargs == ZERO_OR_MORE and
@@ -2266,8 +2249,6 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
             if (not arg_strings and action.default is not None
                and action.nargs == _OPTIONAL_PARSER):
               value = [action.default]
-              pprint("DEFAULT VALUE!!!")
-            pprint(["VALUE", value, arg_strings])
             self._check_value(action, value[0])
 
         # all other types of nargs produce a list
